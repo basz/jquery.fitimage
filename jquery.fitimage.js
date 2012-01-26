@@ -59,7 +59,8 @@
         	fade: 0,
         	animate: 0,
         	animateEase: 'swing',
-        	protect: 0
+        	protect: 0,
+        	doNotUpdateWhenHidden: true /* don't update when the viewport's element is hidden for resize events */
         };
 
     function Plugin( element, options ) {
@@ -128,6 +129,9 @@
     Plugin.prototype.update = function (initializing) {
     	var viewportSize = {width: this.$parent.width(), height: this.$parent.height()};
         if (viewportSize.width === 0 || viewportSize.height === 0) { // parent is invisible, eg. display: none
+        	if (this.options.doNotUpdateWhenHidden)
+        		return;
+
             viewportSize = this._getElementSizeWhenHidden(this.$parent);
         }
     	
@@ -213,7 +217,7 @@
     };
 
     /**
-     * If the element is invisible, jQuery .height() and .width() return 0 in IE.
+     * If the element is invisible, jQuery .height() and .width() return 0.
      * This function returns the hidden element's correct width and height.
      * Thanks elliotlarson for the solution:
      * http://stackoverflow.com/questions/2345784/jquery-get-height-of-hidden-element-in-jquery-1-4-2
@@ -226,7 +230,7 @@
      */
     Plugin.prototype._getElementSizeWhenHidden = function(element) {
     	// find the closest visible parent and get it's hidden children
-    	var visibleParent = element.closest(':visible').children(), size;
+    	var visibleParent = element.parents().filter(':not(:visible)'), size;
 
 		// set a temporary class on the hidden parent of the element
     	visibleParent.addClass('fitimage-tmp-show');
